@@ -14,12 +14,12 @@
 	<dependency>
 		<groupId>org.jacoco</groupId>
 		<artifactId>org.jacoco.core</artifactId>
-		<version>0.6.4.201312101107</version>
+		<version>0.8.3</version>
 	</dependency>
 	<dependency>
 		<groupId>org.ow2.asm</groupId>
 		<artifactId>asm</artifactId>
-		<version>4.1</version>
+		<version>7.0</version>
 	</dependency>
 	<dependency>
 		<groupId>org.apache.commons</groupId>
@@ -51,7 +51,7 @@
       <plugin>
         <groupId>org.jacoco</groupId>
         <artifactId>jacoco-maven-plugin</artifactId>
-        <version>0.6.4.201312101107</version>
+        <version>0.8.4-SNAPSHOT</version>
 		<configuration>
 		    <fileSets>
 		      <fileSet implementation="org.apache.maven.shared.model.fileset.FileSet">

@@ -53,20 +53,20 @@ public class CoverageDiff {
 	final static String TOTAL_LABEL = "Total Branch Coverage";
 	private final static String ALL_PACKAGES = "all";
 
-	public CoverageDiff(final File projectDirectory, File reportDirectory/*, int numberOfTestSuites*/) {
-		this.title = projectDirectory.getName();
-		
-		this.projectDirectory = projectDirectory;
-		this.classesDirectory = new File(projectDirectory, "classes");
-		this.sourceDirectory = new File(projectDirectory, "src");
-		this.reportDirectory = reportDirectory;
+	public CoverageDiff(final String classesDirectory, String sourcesDirectory, String reportDirectory/*, int numberOfTestSuites*/) {
+		this.title = new File(classesDirectory).getName();
+
+		this.projectDirectory = new File(classesDirectory);
+		this.classesDirectory = new File(classesDirectory);
+		this.sourceDirectory = new File(sourcesDirectory);
+		this.reportDirectory = new File(reportDirectory);
 		prepareReportDirectory();
 		
 		this.packageCoverage = new HashMap<>();		
 		numberOfTestSuites = getOptionValues("exec", ",").length;
 		this.totalCoverage = new Coverage[numberOfTestSuites + 1];
 
-		this.director = new CodeDirectorImpl(sourceDirectory, this.reportDirectory, new HTMLHighlighter());
+		this.director = new CodeDirectorImpl(this.sourceDirectory, this.reportDirectory, new HTMLHighlighter());
 	}
 	
 	private void prepareReportDirectory() {		
@@ -97,8 +97,8 @@ public class CoverageDiff {
 		
 		if (!extractArguments(args)) return;
 
-		CoverageDiff s = new CoverageDiff(new File(getOptionValue("source")), 
-										  new File(getOptionValue("report"))/*, 
+		CoverageDiff s = new CoverageDiff(getOptionValue("classes"), getOptionValue("sources"),
+										  getOptionValue("report")/*,
 										   args.length - EXEC_DATA_INDEX*/);
 	    IBundleCoverage bundleCoverage;
 	    	    
@@ -109,7 +109,9 @@ public class CoverageDiff {
 	    
 		// Merge the execution files and analyze the coverage
 		s.mergeExecDataFiles();
-		bundleCoverage = s.loadAndAnalyze(new File("./target/jacoco.exec"));		
+		File jacocoTarget = new File("./target/jacoco.exec");
+		jacocoTarget.createNewFile();
+		bundleCoverage = s.loadAndAnalyze(jacocoTarget);
 		bcl.add(bundleCoverage);
 		
 		s.calculateBranchCoverage(bcl);
@@ -147,11 +149,15 @@ public class CoverageDiff {
 
 		Options options = new Options();
 		boolean valid = true;
-		
-		options.addOption( OptionBuilder.withLongOpt( "source" )
-		        .withDescription( "The directory containing the SOURCE files" )
+
+		options.addOption( OptionBuilder.withLongOpt( "classes" )
+		        .withDescription( "The directory containing the CLASSES files" )
 		        .hasArg()
 		        .create() );
+		options.addOption( OptionBuilder.withLongOpt( "sources" )
+				.withDescription( "The directory containing the SOURCE files" )
+				.hasArg()
+				.create() );
 		options.addOption( OptionBuilder.withLongOpt( "report" )
                 .withDescription( "The directory that the generated REPORTs will be written to" )
                 .hasArg()
@@ -176,7 +182,7 @@ public class CoverageDiff {
 		    // parse the command line arguments
 			line = parser.parse( options, args );
 		    
-		    if( !line.hasOption( "source" )) {
+		    if( !line.hasOption( "sources" )) {
 		        System.out.println("You need to specify the source directory");
 		        valid = false;
 		    }
@@ -190,6 +196,11 @@ public class CoverageDiff {
 		        System.out.println("You need to specify the name of the exec files.");
 		        valid = false; 
 		    }
+
+		    if( !line.hasOption( "classes") ) {
+				System.out.println("You need to specify the classes directory.");
+				valid = false;
+			}
 
 		    
 		}
@@ -367,7 +378,6 @@ public class CoverageDiff {
 				coverageBuilder);
 
 		analyzer.analyzeAll(classesDirectory);
-
 		return coverageBuilder.getBundle(title);
 	}
 	
